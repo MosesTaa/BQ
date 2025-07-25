@@ -2,136 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>BQ Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BQ Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      padding: 20px;
-    }
-
-    h1 {
+      padding: 2rem;
+      background-color: #f0f2f5;
       color: #333;
     }
-
-    .container {
-      background: white;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    h1 {
+      color: #2c3e50;
     }
-
-    input[type="file"] {
-      display: block;
-      margin-bottom: 15px;
+    input, button {
+      margin-top: 10px;
     }
-
-    button {
-      background-color: #007BFF;
-      color: white;
-      padding: 10px 18px;
-      border: none;
+    #output {
+      margin-top: 20px;
+      background: #fff;
+      padding: 10px;
       border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    .results {
-      margin-top: 30px;
-      display: none;
-    }
-
-    .results h3 {
-      margin-bottom: 10px;
-    }
-
-    ul {
-      padding-left: 20px;
-    }
-
-    .note {
-      font-size: 13px;
-      color: gray;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>BQ Generator</h1>
-    <p>Select a building plan in <strong>PDF format</strong> to generate a mock Bill of Quantities.</p>
-    <form id="uploadForm">
-      <input type="file" id="pdfFile" accept=".pdf" required />
-      <button type="submit">Generate Bill of Quantities</button>
-    </form>
 
-    <div class="results" id="resultSection">
-      <h3>Extracted Rooms</h3>
-      <ul id="roomList"></ul>
+  <h1>BQ Generator</h1>
+  <p>Upload your architectural plan in PDF format:</p>
 
-      <h3>Extracted Doors</h3>
-      <ul id="doorList"></ul>
+  <form id="uploadForm">
+    <input type="file" id="fileInput" accept=".pdf" required />
+    <br />
+    <button type="submit">Generate Bill of Quantities</button>
+  </form>
 
-      <p class="note">* This is a static demo for GitHub Pages. Actual PDF processing will work with a backend server.</p>
-    </div>
+  <div id="output">
+    <h3>Results:</h3>
+    <pre id="resultText">Waiting for input...</pre>
   </div>
 
   <script>
-    const form = document.getElementById("uploadForm");
-    const resultSection = document.getElementById("resultSection");
-    const roomList = document.getElementById("roomList");
-    const doorList = document.getElementById("doorList");
+    const form = document.getElementById('uploadForm');
+    const resultText = document.getElementById('resultText');
 
-    form.addEventListener("submit", function(event) {
-      event.preventDefault();
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-      const file = document.getElementById("pdfFile").files[0];
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      if (!file) return alert("Please select a PDF file.");
 
-      if (!file || file.type !== "application/pdf") {
-        alert("Please upload a valid PDF file.");
-        return;
+      const formData = new FormData();
+      formData.append('pdf', file);
+
+      resultText.textContent = "Processing...";
+
+      try {
+        const response = await fetch('https://bq-n4wq.onrender.com/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+        resultText.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        resultText.textContent = "Error: " + error.message;
       }
-
-      // Simulated response
-      const rooms = [
-        "Room 1: 3.5m x 4m",
-        "Room 2: 3m x 3.5m",
-        "Room 3: 2.8m x 3.2m",
-        "Room 4: 4m x 5m"
-      ];
-
-      const doors = [
-        "Door 1: 0.9m x 2.1m",
-        "Door 2: 0.8m x 2.0m",
-        "Door 3: 1.0m x 2.1m",
-        "Door 4: 0.75m x 2.0m",
-        "Door 5: 0.9m x 2.1m"
-      ];
-
-      // Populate mock results
-      roomList.innerHTML = "";
-      doorList.innerHTML = "";
-
-      rooms.forEach(room => {
-        const li = document.createElement("li");
-        li.textContent = room;
-        roomList.appendChild(li);
-      });
-
-      doors.forEach(door => {
-        const li = document.createElement("li");
-        li.textContent = door;
-        doorList.appendChild(li);
-      });
-
-      resultSection.style.display = "block";
     });
   </script>
+
 </body>
 </html>
