@@ -57,17 +57,23 @@
 
       resultText.textContent = "Processing...";
 
-      try {
-        const response = await fetch('https://bq-n4wq.onrender.com/upload', {
-          method: 'POST',
-          body: formData
-        });
+try {
+  const response = await fetch('https://bq-n4wq.onrender.com/upload', {
+    method: 'POST',
+    body: formData
+  });
 
-        const data = await response.json();
-        resultText.textContent = JSON.stringify(data, null, 2);
-      } catch (error) {
-        resultText.textContent = "Error: " + error.message;
-      }
+  if (!response.ok) {
+    throw new Error(`Server error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  console.log('Success:', data);
+  // You can now display `data.message`, `data.filename`, etc. to the user
+} catch (error) {
+  console.error('Upload failed:', error);
+  alert('Upload failed. Please try again.');
+}
     });
   </script>
 
