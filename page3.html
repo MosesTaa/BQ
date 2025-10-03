@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Architectural Plan Builder - Room Areas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #121212;
+      color: #f5f5f5;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 22px;
+    }
+    .list-item {
+      background: #1f1f1f;
+      margin: 8px 0;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+    .nav-buttons button {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .prev-btn { background-color: #757575; color: #fff; }
+    .next-btn { background-color: #1e88e5; color: #fff; }
+    .prev-btn:hover { background-color: #555; }
+    .next-btn:hover { background-color: #1565c0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Step 6: Room Area Calculations</h2>
+    <div id="roomAreas"></div>
+    <div class="nav-buttons">
+      <button class="prev-btn" onclick="goPrev()">Previous</button>
+      <button class="next-btn" onclick="goNext()">Back</button>
+    </div>
+  </div>
+
+  <script>
+    // Example: These would usually come from localStorage or passed state
+    let rooms = JSON.parse(localStorage.getItem("rooms")) || [];
+    let walls = JSON.parse(localStorage.getItem("walls")) || [];
+    let doors = JSON.parse(localStorage.getItem("doors")) || [];
+    let windowsArr = JSON.parse(localStorage.getItem("windows")) || [];
+
+    function calculateAreas() {
+      const container = document.getElementById("roomAreas");
+      container.innerHTML = "";
+
+      rooms.forEach(room => {
+        const rWalls = walls.filter(w => w.room === room);
+
+        let totalArea = 0;
+        let wallsInfo = "";
+
+        rWalls.forEach(w => {
+          let wallArea = parseFloat(w.length) * parseFloat(w.height);
+
+          // Subtract doors attached to this wall
+          const wallDoors = doors.filter(d => d.wall === w.name);
+          wallDoors.forEach(d => {
+            wallArea -= (parseFloat(d.width) * parseFloat(d.height));
+          });
+
+          // Subtract windows attached to this wall
+          const wallWindows = windowsArr.filter(win => win.wall === w.name);
+          wallWindows.forEach(win => {
+            wallArea -= (parseFloat(win.width) * parseFloat(win.height));
+          });
+
+          totalArea += wallArea;
+          wallsInfo += `<br> - ${w.name}: ${w.length} x ${w.height} = ${wallArea.toFixed(2)} m²`;
+        });
+
+        container.innerHTML += `
+          <div class="list-item">
+            <strong>${room}</strong><br>
+            Total Net Wall Area: ${totalArea.toFixed(2)} m²
+            <br><em>Walls:</em> ${wallsInfo}
+          </div>`;
+      });
+    }
+
+    function goPrev() {
+      window.location.href = "page2.html"; // go back to previous step
+    }
+    function goNext() {
+      alert("Proceeding to next step...");
+      // window.location.href = "page4.html"; // if next page exists
+    }
+
+    // Run on load
+    calculateAreas();
+  </script>
+</body>
+</html>
