@@ -1,232 +1,329 @@
-<script>
-  let rooms = [];
-  let walls = [];
-  let doors = [];
-  let windowsArr = [];
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BoQ Generator — Project Setup</title>
+  <style>
+    :root {
+      --forest:#0b6b3a;
+      --forest-dark:#062e1a;
+      --forest-light:#14532d;
+      --accent:#16a34a;
+    }
 
-  // Load previous project data (from page1.html)
-  let projectData = JSON.parse(localStorage.getItem('boq_project') || '{}');
-  if (projectData.rooms) rooms = projectData.rooms;
-  if (projectData.walls) walls = projectData.walls;
-  if (projectData.doors) doors = projectData.doors;
-  if (projectData.windows) windowsArr = projectData.windows;
+    body {
+      margin:0;
+      font-family: Inter, sans-serif;
+      background: var(--forest-dark);
+      color:#f5f5f5;
+      font-size:16px; /* standard readable font size */
+      line-height:1.5;
+    }
 
-  // ---------- SAVE FUNCTION ----------
-  function saveData() {
-    projectData.rooms = rooms;
-    projectData.walls = walls;
-    projectData.doors = doors;
-    projectData.windows = windowsArr;
-    localStorage.setItem('boq_project', JSON.stringify(projectData));
-  }
+    .app {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      padding:20px;
+    }
 
-  // ---------- ROOMS ----------
-  function addRoom() {
-    const name = document.getElementById('roomName').value.trim();
-    if (!name) return;
-    if (rooms.includes(name)) { alert("Room name already exists!"); return; }
-    rooms.push(name);
-    saveData();
-    updateRoomList();
-    document.getElementById('roomName').value = '';
-    updateWallRoomOptions();
-  }
+    .card {
+      max-width:650px;
+      width:100%;
+      background: var(--forest-light);
+      border-radius:14px;
+      padding:24px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.4);
+    }
 
-  function updateRoomList() {
-    const list = document.getElementById('roomList');
-    list.innerHTML = '';
-    rooms.forEach((r, i) => {
-      list.innerHTML += `<div class="list-item">
-        <span id="room-${i}">${r}</span>
-        <div class="action-buttons">
-          <button class="edit-btn" onclick="editRoom(${i})">Edit</button>
-          <button class="delete-btn" onclick="deleteRoom(${i})">Del</button>
-        </div></div>`;
+    h1 {
+      margin:0 0 12px;
+      font-size:24px;
+      color:#fff;
+    }
+
+    p.lead {
+      color:#cbd5c0;
+      font-size:16px;
+      margin-bottom:20px;
+    }
+
+    .form-step { display:none; }
+    .form-step.active { display:block; }
+
+    label {
+      display:block;
+      margin-bottom:6px;
+      font-size:15px;
+      font-weight:500;
+      color:#e0e0e0;
+    }
+
+    input, select {
+      width:100%;
+      padding:12px;
+      border-radius:8px;
+      border:1px solid #1f3d2c;
+      background: var(--forest-dark);
+      color:#fff;
+      margin-bottom:20px;
+      font-size:15px;
+    }
+
+    .toggle {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:rgba(0,0,0,0.2);
+      padding:10px;
+      border-radius:8px;
+      margin-bottom:20px;
+    }
+
+    .switch {
+      position:relative;
+      width:50px;
+      height:28px;
+      border-radius:999px;
+      background:#333;
+      cursor:pointer;
+      flex-shrink:0;
+    }
+    .switch input { display:none; }
+    .knob {
+      position:absolute;
+      top:4px;
+      left:4px;
+      width:20px;
+      height:20px;
+      border-radius:50%;
+      background:#fff;
+      transition:all .18s;
+    }
+    .switch.on { background: var(--accent); }
+    .switch.on .knob { left:26px; background:#064e3b; }
+
+    .footer-fixed {
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      background: var(--forest-dark);
+      padding:12px 20px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-top:1px solid rgba(255,255,255,0.08);
+    }
+
+    button {
+      background: var(--accent);
+      border:none;
+      padding:10px 20px;
+      border-radius:8px;
+      font-weight:600;
+      font-size:15px;
+      color:#fff;
+      cursor:pointer;
+      transition: background .2s;
+    }
+    button:hover { background:#15803d; }
+    button:disabled {
+      background:#3a3a3a;
+      color:#999;
+      cursor:not-allowed;
+    }
+
+    .toast {
+      position:fixed;
+      right:20px;
+      bottom:90px;
+      background: var(--forest);
+      padding:14px 16px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.15);
+      color:#e6ffe9;
+      display:none;
+      font-size:14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <h1>BoQ Generator — Project setup</h1>
+      <p class="lead">Enter the basic project details step by step.</p>
+
+      <form id="projectForm" autocomplete="off">
+        <div class="form-step active" data-step="1">
+          <label for="projectName">Project name</label>
+          <input id="projectName" name="projectName" type="text" placeholder="e.g. Nyeri Family Home" required />
+        </div>
+
+        <div class="form-step" data-step="2">
+          <label for="county">Location — County</label>
+          <select id="county" name="county" size="6" required>
+            <option>Mombasa</option>
+            <option>Kwale</option>
+            <option>Kilifi</option>
+            <option>Tana River</option>
+            <option>Lamu</option>
+            <option>Taita-Taveta</option>
+            <option>Garissa</option>
+            <option>Wajir</option>
+            <option>Mandera</option>
+            <option>Marsabit</option>
+            <option>Isiolo</option>
+            <option>Meru</option>
+            <option>Tharaka-Nithi</option>
+            <option>Embu</option>
+            <option>Kitui</option>
+            <option>Machakos</option>
+            <option>Makueni</option>
+            <option>Nyandarua</option>
+            <option>Nyeri</option>
+            <option>Kirinyaga</option>
+            <option>Murang'a</option>
+            <option>Kiambu</option>
+            <option>Turkana</option>
+            <option>West Pokot</option>
+            <option>Samburu</option>
+            <option>Trans-Nzoia</option>
+            <option>Uasin Gishu</option>
+            <option>Elgeyo-Marakwet</option>
+            <option>Nandi</option>
+            <option>Baringo</option>
+            <option>Laikipia</option>
+            <option>Nakuru</option>
+            <option>Narok</option>
+            <option>Kajiado</option>
+            <option>Kericho</option>
+            <option>Bomet</option>
+            <option>Kakamega</option>
+            <option>Vihiga</option>
+            <option>Bungoma</option>
+            <option>Busia</option>
+            <option>Siaya</option>
+            <option>Kisumu</option>
+            <option>Homa Bay</option>
+            <option>Migori</option>
+            <option>Kisii</option>
+            <option>Nyamira</option>
+            <option>Nairobi</option>
+          </select>
+        </div>
+
+        <div class="form-step" data-step="3">
+          <label for="houseType">House type</label>
+          <select id="houseType" name="houseType" size="4" required>
+            <option>Apartment</option>
+            <option>Family home</option>
+            <option>Rentals</option>
+            <option>Others</option>
+          </select>
+        </div>
+
+        <div class="form-step" data-step="4">
+          <label for="bedrooms">Number of bedrooms</label>
+          <input id="bedrooms" name="bedrooms" type="number" min="0" step="1" value="3" required />
+        </div>
+
+        <div class="form-step" data-step="5">
+          <label for="landscape">Landscape</label>
+          <select id="landscape" name="landscape" size="2" required>
+            <option>Flat</option>
+            <option>Steep</option>
+          </select>
+        </div>
+
+        <div class="form-step" data-step="6">
+          <label for="areaCondition">Area condition</label>
+          <select id="areaCondition" name="areaCondition" size="2" required>
+            <option>Dry</option>
+            <option>Swampy</option>
+          </select>
+        </div>
+
+        <div class="form-step" data-step="7">
+          <label>Fencing needed</label>
+          <div class="toggle">
+            <div id="fenceSwitch" class="switch" role="switch" aria-checked="false" tabindex="0">
+              <input id="fencing" type="checkbox" name="fencing" />
+              <div class="knob"></div>
+            </div>
+            <div style="font-size:15px;color:#d1d5db">Toggle if you want the site fenced</div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="footer-fixed">
+    <button id="prevBtn" disabled>Previous</button>
+    <button id="nextBtn">Next</button>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const steps = document.querySelectorAll('.form-step');
+    let currentStep = 0;
+
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const toast = document.getElementById('toast');
+    const fencingCheckbox = document.getElementById('fencing');
+    const switchEl = document.getElementById('fenceSwitch');
+
+    function showStep(index){
+      steps.forEach((step,i)=>{
+        step.classList.toggle('active', i===index);
+      });
+      prevBtn.disabled = index===0;
+      nextBtn.textContent = index===steps.length-1 ? 'Proceed to the next page' : 'Next';
+    }
+
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(()=>toast.style.display='none',2000);
+    }
+
+    nextBtn.addEventListener('click', ()=>{
+      if(currentStep < steps.length-1){
+        currentStep++;
+        showStep(currentStep);
+      } else {
+        const data = {
+          projectName: document.getElementById('projectName').value.trim(),
+          county: document.getElementById('county').value,
+          houseType: document.getElementById('houseType').value,
+          bedrooms: document.getElementById('bedrooms').value,
+          landscape: document.getElementById('landscape').value,
+          areaCondition: document.getElementById('areaCondition').value,
+          fencing: fencingCheckbox.checked
+        };
+        localStorage.setItem('boq_project', JSON.stringify(data));
+        showToast('Saved — proceeding to page 2');
+        setTimeout(()=> window.location.href='page2.html',1000);
+      }
     });
-  }
 
-  function deleteRoom(i) {
-    rooms.splice(i,1);
-    saveData();
-    updateRoomList();
-    updateWallRoomOptions();
-  }
-
-  function editRoom(i) {
-    const span = document.getElementById(`room-${i}`);
-    const oldValue = rooms[i];
-    span.innerHTML = `<input type="text" id="edit-room-${i}" value="${oldValue}" style="width:90%">`;
-    const input = document.getElementById(`edit-room-${i}`);
-    input.focus();
-    input.onblur = () => { 
-      rooms[i] = input.value.trim() || oldValue; 
-      saveData();
-      updateRoomList(); 
-      updateWallRoomOptions(); 
-    };
-  }
-
-  function updateWallRoomOptions() {
-    const select = document.getElementById('wallRoom');
-    select.innerHTML = rooms.map(r => `<option value="${r}">${r}</option>`).join('');
-  }
-
-  // ---------- WALLS ----------
-  function addWall() {
-    const name = document.getElementById('wallName').value.trim();
-    const length = document.getElementById('wallLength').value;
-    const height = document.getElementById('wallHeight').value;
-    const unit = document.getElementById('wallUnit').value;
-    const room = document.getElementById('wallRoom').value;
-    if (!name || !length || !height || !room) return;
-    walls.push({name, length, height, unit, room});
-    saveData();
-    updateWallList();
-    document.getElementById('wallName').value = '';
-    document.getElementById('wallLength').value = '';
-    document.getElementById('wallHeight').value = '';
-    updateWallOptions();
-  }
-
-  function updateWallList() {
-    const list = document.getElementById('wallList');
-    list.innerHTML = '';
-    walls.forEach((w, i) => {
-      list.innerHTML += `<div class="list-item">
-        <span id="wall-${i}">${w.name} - ${w.length}x${w.height} ${w.unit} (Room: ${w.room})</span>
-        <div class="action-buttons">
-          <button class="edit-btn" onclick="editWall(${i})">Edit</button>
-          <button class="delete-btn" onclick="deleteWall(${i})">Del</button>
-        </div></div>`;
+    prevBtn.addEventListener('click', ()=>{
+      if(currentStep>0){
+        currentStep--;
+        showStep(currentStep);
+      }
     });
-  }
 
-  function deleteWall(i) { 
-    walls.splice(i,1); 
-    saveData();
-    updateWallList(); 
-    updateWallOptions(); 
-  }
-
-  function editWall(i) {
-    const span = document.getElementById(`wall-${i}`);
-    const w = walls[i];
-    span.innerHTML = `<input type="text" id="edit-wall-${i}" value="${w.name}" style="width:90%">`;
-    const input = document.getElementById(`edit-wall-${i}`);
-    input.focus();
-    input.onblur = () => { 
-      walls[i].name = input.value.trim() || w.name; 
-      saveData();
-      updateWallList(); 
-    };
-  }
-
-  function updateWallOptions() {
-    const doorSel = document.getElementById('doorWall');
-    const winSel = document.getElementById('windowWall');
-    doorSel.innerHTML = walls.map(w => `<option value="${w.name}">${w.name} (${w.room})</option>`).join('');
-    winSel.innerHTML = doorSel.innerHTML;
-  }
-
-  // ---------- DOORS ----------
-  function addDoor() {
-    const name = document.getElementById('doorName').value.trim();
-    const width = document.getElementById('doorWidth').value;
-    const height = document.getElementById('doorHeight').value;
-    const unit = document.getElementById('doorUnit').value;
-    const wall = document.getElementById('doorWall').value;
-    if (!name || !width || !height || !wall) return;
-    doors.push({name, width, height, unit, wall});
-    saveData();
-    updateDoorList();
-    document.getElementById('doorName').value = '';
-  }
-
-  function updateDoorList() {
-    const list = document.getElementById('doorList');
-    list.innerHTML = '';
-    doors.forEach((d, i) => {
-      list.innerHTML += `<div class="list-item">
-        <span id="door-${i}">${d.name} - ${d.width}x${d.height} ${d.unit} (Wall: ${d.wall})</span>
-        <div class="action-buttons">
-          <button class="edit-btn" onclick="editDoor(${i})">Edit</button>
-          <button class="delete-btn" onclick="deleteDoor(${i})">Del</button>
-        </div></div>`;
+    switchEl.addEventListener('click', ()=>{
+      switchEl.classList.toggle('on');
+      fencingCheckbox.checked = switchEl.classList.contains('on');
     });
-  }
 
-  function deleteDoor(i) { doors.splice(i,1); saveData(); updateDoorList(); }
-  function editDoor(i) {
-    const span = document.getElementById(`door-${i}`);
-    const d = doors[i];
-    span.innerHTML = `<input type="text" id="edit-door-${i}" value="${d.name}" style="width:90%">`;
-    const input = document.getElementById(`edit-door-${i}`);
-    input.focus();
-    input.onblur = () => { doors[i].name = input.value.trim() || d.name; saveData(); updateDoorList(); };
-  }
-
-  // ---------- WINDOWS ----------
-  function addWindow() {
-    const name = document.getElementById('windowName').value.trim();
-    const width = document.getElementById('windowWidth').value;
-    const height = document.getElementById('windowHeight').value;
-    const unit = document.getElementById('windowUnit').value;
-    const wall = document.getElementById('windowWall').value;
-    if (!name || !width || !height || !wall) return;
-    windowsArr.push({name, width, height, unit, wall});
-    saveData();
-    updateWindowList();
-    document.getElementById('windowName').value = '';
-  }
-
-  function updateWindowList() {
-    const list = document.getElementById('windowList');
-    list.innerHTML = '';
-    windowsArr.forEach((w, i) => {
-      list.innerHTML += `<div class="list-item">
-        <span id="window-${i}">${w.name} - ${w.width}x${w.height} ${w.unit} (Wall: ${w.wall})</span>
-        <div class="action-buttons">
-          <button class="edit-btn" onclick="editWindow(${i})">Edit</button>
-          <button class="delete-btn" onclick="deleteWindow(${i})">Del</button>
-        </div></div>`;
-    });
-  }
-
-  function deleteWindow(i) { windowsArr.splice(i,1); saveData(); updateWindowList(); }
-  function editWindow(i) {
-    const span = document.getElementById(`window-${i}`);
-    const w = windowsArr[i];
-    span.innerHTML = `<input type="text" id="edit-window-${i}" value="${w.name}" style="width:90%">`;
-    const input = document.getElementById(`edit-window-${i}`);
-    input.focus();
-    input.onblur = () => { windowsArr[i].name = input.value.trim() || w.name; saveData(); updateWindowList(); };
-  }
-
-  // ---------- NAVIGATION ----------
-  function nextStep(n) {
-    document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden'));
-    document.getElementById('step'+n).classList.remove('hidden');
-    if (n === 5) generatePreview();
-  }
-  function prevStep(n) { nextStep(n); }
-
-  function generatePreview() {
-    let summary = '';
-    rooms.forEach(r => {
-      const rWalls = walls.filter(w => w.room === r);
-      const rDoors = doors.filter(d => rWalls.some(w => w.name === d.wall));
-      const rWindows = windowsArr.filter(wi => rWalls.some(w => w.name === wi.wall));
-      summary += `<div class="list-item"><strong>${r}</strong>: 
-        ${rWalls.length} Walls, ${rDoors.length} Doors, ${rWindows.length} Windows</div>`;
-    });
-    document.getElementById('preview').innerHTML = summary;
-  }
-
-  // ---------- INIT ----------
-  updateRoomList();
-  updateWallList();
-  updateDoorList();
-  updateWindowList();
-  updateWallRoomOptions();
-  updateWallOptions();
-</script>
+    showStep(currentStep);
+  </script>
+</body>
+</html>
