@@ -5,95 +5,27 @@
   <title>Architectural Plan Builder</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      background-color: #121212;
-      color: #f5f5f5;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 15px;
-      font-size: 20px;
-    }
+    body { background:#121212; color:#f5f5f5; font-family:Arial,sans-serif; margin:0; padding:0; }
+    .container { max-width:600px; margin:auto; padding:20px; }
+    h2 { text-align:center; margin-bottom:15px; font-size:20px; }
     input, select, button {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 6px;
-      border: 1px solid #333;
-      font-size: 16px;
-      color: #000;
-      box-sizing: border-box;
+      width:100%; padding:12px; margin:8px 0; border-radius:6px;
+      border:1px solid #333; font-size:16px; color:#000; box-sizing:border-box;
     }
-    button {
-      background-color: #1e88e5;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #1565c0;
-    }
-    .list-item {
-      background: #1f1f1f;
-      margin: 5px 0;
-      padding: 10px;
-      border-radius: 6px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 15px;
-    }
-    .list-item span {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .action-buttons {
-      flex: 0 0 10%;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .action-buttons button {
-      font-size: 12px;
-      padding: 4px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-align: center;
-    }
-    .edit-btn {
-      background-color: #43a047;
-      color: #fff;
-    }
-    .delete-btn {
-      background-color: #e53935;
-      color: #fff;
-    }
-    .edit-btn:hover { background-color: #2e7d32; }
-    .delete-btn:hover { background-color: #c62828; }
-    .nav-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-      gap: 10px;
-    }
-    .nav-buttons button { flex: 1; }
-    .hidden { display: none; }
-    @media (max-width: 600px) {
-      h2 { font-size: 18px; }
-      input, select, button { font-size: 14px; padding: 10px; }
-      .list-item { font-size: 14px; }
-    }
+    button { background:#1e88e5; color:#fff; border:none; cursor:pointer; }
+    button:hover { background:#1565c0; }
+    .list-item { background:#1f1f1f; margin:5px 0; padding:10px; border-radius:6px;
+      display:flex; justify-content:space-between; align-items:center; font-size:15px; }
+    .list-item span { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .action-buttons { flex:0 0 10%; display:flex; flex-direction:column; gap:4px; }
+    .action-buttons button { font-size:12px; padding:4px; border:none; border-radius:4px; cursor:pointer; }
+    .edit-btn { background:#43a047; color:#fff; }
+    .delete-btn { background:#e53935; color:#fff; }
+    .edit-btn:hover { background:#2e7d32; }
+    .delete-btn:hover { background:#c62828; }
+    .nav-buttons { display:flex; justify-content:space-between; margin-top:20px; gap:10px; }
+    .nav-buttons button { flex:1; }
+    .hidden { display:none; }
   </style>
 </head>
 <body>
@@ -176,7 +108,7 @@
       <div id="preview"></div>
       <div class="nav-buttons">
         <button onclick="prevStep(4)">Previous</button>
-        <button onclick="alert('Proceeding...')">Proceed</button>
+        <button onclick="saveAndProceed()">Proceed</button>
       </div>
     </div>
   </div>
@@ -187,6 +119,28 @@
     let doors = [];
     let windowsArr = [];
 
+    // Load existing if user comes back
+    const saved = JSON.parse(localStorage.getItem("boq_project2") || "{}");
+    if(saved.rooms) rooms = saved.rooms;
+    if(saved.walls) walls = saved.walls;
+    if(saved.doors) doors = saved.doors;
+    if(saved.windows) windowsArr = saved.windows;
+
+    // update UI on reload
+    window.onload = () => {
+      updateRoomList();
+      updateWallList();
+      updateDoorList();
+      updateWindowList();
+      updateWallRoomOptions();
+    };
+
+    function saveData() {
+      localStorage.setItem("boq_project2", JSON.stringify({
+        rooms, walls, doors, windows: windowsArr
+      }));
+    }
+
     function addRoom() {
       const name = document.getElementById('roomName').value.trim();
       if (!name) return;
@@ -195,6 +149,7 @@
       updateRoomList();
       document.getElementById('roomName').value = '';
       updateWallRoomOptions();
+      saveData();
     }
     function updateRoomList() {
       const list = document.getElementById('roomList');
@@ -212,6 +167,7 @@
       rooms.splice(i,1);
       updateRoomList();
       updateWallRoomOptions();
+      saveData();
     }
     function editRoom(i) {
       const span = document.getElementById(`room-${i}`);
@@ -219,7 +175,7 @@
       span.innerHTML = `<input type="text" id="edit-room-${i}" value="${oldValue}" style="width:90%">`;
       const input = document.getElementById(`edit-room-${i}`);
       input.focus();
-      input.onblur = () => { rooms[i] = input.value.trim() || oldValue; updateRoomList(); updateWallRoomOptions(); };
+      input.onblur = () => { rooms[i] = input.value.trim() || oldValue; updateRoomList(); updateWallRoomOptions(); saveData(); };
     }
 
     function updateWallRoomOptions() {
@@ -240,6 +196,7 @@
       document.getElementById('wallLength').value = '';
       document.getElementById('wallHeight').value = '';
       updateWallOptions();
+      saveData();
     }
     function updateWallList() {
       const list = document.getElementById('wallList');
@@ -253,14 +210,14 @@
           </div></div>`;
       });
     }
-    function deleteWall(i) { walls.splice(i,1); updateWallList(); updateWallOptions(); }
+    function deleteWall(i) { walls.splice(i,1); updateWallList(); updateWallOptions(); saveData(); }
     function editWall(i) {
       const span = document.getElementById(`wall-${i}`);
       const w = walls[i];
       span.innerHTML = `<input type="text" id="edit-wall-${i}" value="${w.name}" style="width:90%">`;
       const input = document.getElementById(`edit-wall-${i}`);
       input.focus();
-      input.onblur = () => { walls[i].name = input.value.trim() || w.name; updateWallList(); };
+      input.onblur = () => { walls[i].name = input.value.trim() || w.name; updateWallList(); saveData(); };
     }
 
     function updateWallOptions() {
@@ -280,6 +237,7 @@
       doors.push({name, width, height, unit, wall});
       updateDoorList();
       document.getElementById('doorName').value = '';
+      saveData();
     }
     function updateDoorList() {
       const list = document.getElementById('doorList');
@@ -293,14 +251,14 @@
           </div></div>`;
       });
     }
-    function deleteDoor(i) { doors.splice(i,1); updateDoorList(); }
+    function deleteDoor(i) { doors.splice(i,1); updateDoorList(); saveData(); }
     function editDoor(i) {
       const span = document.getElementById(`door-${i}`);
       const d = doors[i];
       span.innerHTML = `<input type="text" id="edit-door-${i}" value="${d.name}" style="width:90%">`;
       const input = document.getElementById(`edit-door-${i}`);
       input.focus();
-      input.onblur = () => { doors[i].name = input.value.trim() || d.name; updateDoorList(); };
+      input.onblur = () => { doors[i].name = input.value.trim() || d.name; updateDoorList(); saveData(); };
     }
 
     function addWindow() {
@@ -313,6 +271,7 @@
       windowsArr.push({name, width, height, unit, wall});
       updateWindowList();
       document.getElementById('windowName').value = '';
+      saveData();
     }
     function updateWindowList() {
       const list = document.getElementById('windowList');
@@ -326,14 +285,14 @@
           </div></div>`;
       });
     }
-    function deleteWindow(i) { windowsArr.splice(i,1); updateWindowList(); }
+    function deleteWindow(i) { windowsArr.splice(i,1); updateWindowList(); saveData(); }
     function editWindow(i) {
       const span = document.getElementById(`window-${i}`);
       const w = windowsArr[i];
       span.innerHTML = `<input type="text" id="edit-window-${i}" value="${w.name}" style="width:90%">`;
       const input = document.getElementById(`edit-window-${i}`);
       input.focus();
-      input.onblur = () => { windowsArr[i].name = input.value.trim() || w.name; updateWindowList(); };
+      input.onblur = () => { windowsArr[i].name = input.value.trim() || w.name; updateWindowList(); saveData(); };
     }
 
     function nextStep(n) {
@@ -353,6 +312,13 @@
           ${rWalls.length} Walls, ${rDoors.length} Doors, ${rWindows.length} Windows</div>`;
       });
       document.getElementById('preview').innerHTML = summary;
+      saveData();
+    }
+
+    function saveAndProceed(){
+      saveData();
+      alert("Saved! Proceeding to Page 3...");
+      window.location.href="page3.html";
     }
   </script>
 </body>
