@@ -1,233 +1,273 @@
 <!doctype html>
-
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BoQ Generator — Project Setup</title>
   <style>
-    body{
+    :root {
+      --forest:#0b6b3a;
+      --forest-dark:#062e1a;
+      --forest-light:#14532d;
+      --accent:#16a34a;
+    }
+
+    body {
       margin:0;
-      font-family:Inter, sans-serif;
-      background:#000;
+      font-family: Inter, sans-serif;
+      background: var(--forest-dark);
+      color:#f5f5f5;
+      font-size:16px; /* standard readable font size */
+      line-height:1.5;
+    }
+
+    .app {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      padding:20px;
+    }
+
+    .card {
+      max-width:650px;
+      width:100%;
+      background: var(--forest-light);
+      border-radius:14px;
+      padding:24px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      margin:0 0 12px;
+      font-size:24px;
       color:#fff;
-    }.app{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-  padding:20px;
-}
+    }
 
-.card{
-  max-width:600px;
-  width:100%;
-  background:#111;
-  border-radius:12px;
-  padding:20px;
-  box-shadow:0 4px 16px rgba(0,0,0,0.5);
-}
+    p.lead {
+      color:#cbd5c0;
+      font-size:16px;
+      margin-bottom:20px;
+    }
 
-h1{
-  margin:0 0 10px;
-  font-size:22px;
-}
-p.lead{color:#aaa;font-size:14px;margin-bottom:20px;}
+    .form-step { display:none; }
+    .form-step.active { display:block; }
 
-.form-step{display:none;}
-.form-step.active{display:block;}
+    label {
+      display:block;
+      margin-bottom:6px;
+      font-size:15px;
+      font-weight:500;
+      color:#e0e0e0;
+    }
 
-label{display:block;margin-bottom:6px;font-size:14px;color:#aaa;}
-input, select{
-  width:100%;
-  padding:10px;
-  border-radius:6px;
-  border:1px solid #333;
-  background:#000;
-  color:#fff;
-  margin-bottom:20px;
-}
+    input, select {
+      width:100%;
+      padding:12px;
+      border-radius:8px;
+      border:1px solid #1f3d2c;
+      background: var(--forest-dark);
+      color:#fff;
+      margin-bottom:20px;
+      font-size:15px;
+    }
 
-.toggle{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  background:#1a1a1a;
-  padding:10px;
-  border-radius:8px;
-  margin-bottom:20px;
-}
+    .toggle {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:rgba(0,0,0,0.2);
+      padding:10px;
+      border-radius:8px;
+      margin-bottom:20px;
+    }
 
-.switch{
-  position:relative;
-  width:46px;
-  height:26px;
-  border-radius:999px;
-  background:#1b1b1b;
-  cursor:pointer;
-}
-.switch input{display:none;}
-.knob{
-  position:absolute;
-  top:3px;
-  left:3px;
-  width:20px;
-  height:20px;
-  border-radius:50%;
-  background:#fff;
-  transition:all .18s;
-}
-.switch.on{background:#06b6d4;}
-.switch.on .knob{left:23px;background:#002a2e;}
+    .switch {
+      position:relative;
+      width:50px;
+      height:28px;
+      border-radius:999px;
+      background:#333;
+      cursor:pointer;
+      flex-shrink:0;
+    }
+    .switch input { display:none; }
+    .knob {
+      position:absolute;
+      top:4px;
+      left:4px;
+      width:20px;
+      height:20px;
+      border-radius:50%;
+      background:#fff;
+      transition:all .18s;
+    }
+    .switch.on { background: var(--accent); }
+    .switch.on .knob { left:26px; background:#064e3b; }
 
-.footer-fixed{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#000;
-  padding:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
+    .footer-fixed {
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      background: var(--forest-dark);
+      padding:12px 20px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-top:1px solid rgba(255,255,255,0.08);
+    }
 
-button{
-  background:#06b6d4;
-  border:none;
-  padding:10px 18px;
-  border-radius:6px;
-  font-weight:600;
-  color:#000;
-  cursor:pointer;
-}
-button:disabled{background:#444;color:#999;cursor:not-allowed;}
+    button {
+      background: var(--accent);
+      border:none;
+      padding:10px 20px;
+      border-radius:8px;
+      font-weight:600;
+      font-size:15px;
+      color:#fff;
+      cursor:pointer;
+      transition: background .2s;
+    }
+    button:hover { background:#15803d; }
+    button:disabled {
+      background:#3a3a3a;
+      color:#999;
+      cursor:not-allowed;
+    }
 
-.toast{
-  position:fixed;
-  right:18px;
-  bottom:86px;
-  background:#062023;
-  padding:12px 14px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,0.1);
-  color:#bff0f2;
-  display:none;
-}
-
+    .toast {
+      position:fixed;
+      right:20px;
+      bottom:90px;
+      background: var(--forest);
+      padding:14px 16px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.15);
+      color:#e6ffe9;
+      display:none;
+      font-size:14px;
+    }
   </style>
 </head>
 <body>
   <div class="app">
     <div class="card">
       <h1>BoQ Generator — Project setup</h1>
-      <p class="lead">Enter the basic project details step by step.</p><form id="projectForm" autocomplete="off">
-    <div class="form-step active" data-step="1">
-      <label for="projectName">Project name</label>
-      <input id="projectName" name="projectName" type="text" placeholder="e.g. Nyeri Family Home" required />
-    </div>
+      <p class="lead">Enter the basic project details step by step.</p>
 
-    <div class="form-step" data-step="2">
-      <label for="county">Location — County</label>
-      <select id="county" name="county" size="6" required>
-        <option>Mombasa</option>
-        <option>Kwale</option>
-        <option>Kilifi</option>
-        <option>Tana River</option>
-        <option>Lamu</option>
-        <option>Taita-Taveta</option>
-        <option>Garissa</option>
-        <option>Wajir</option>
-        <option>Mandera</option>
-        <option>Marsabit</option>
-        <option>Isiolo</option>
-        <option>Meru</option>
-        <option>Tharaka-Nithi</option>
-        <option>Embu</option>
-        <option>Kitui</option>
-        <option>Machakos</option>
-        <option>Makueni</option>
-        <option>Nyandarua</option>
-        <option>Nyeri</option>
-        <option>Kirinyaga</option>
-        <option>Murang'a</option>
-        <option>Kiambu</option>
-        <option>Turkana</option>
-        <option>West Pokot</option>
-        <option>Samburu</option>
-        <option>Trans-Nzoia</option>
-        <option>Uasin Gishu</option>
-        <option>Elgeyo-Marakwet</option>
-        <option>Nandi</option>
-        <option>Baringo</option>
-        <option>Laikipia</option>
-        <option>Nakuru</option>
-        <option>Narok</option>
-        <option>Kajiado</option>
-        <option>Kericho</option>
-        <option>Bomet</option>
-        <option>Kakamega</option>
-        <option>Vihiga</option>
-        <option>Bungoma</option>
-        <option>Busia</option>
-        <option>Siaya</option>
-        <option>Kisumu</option>
-        <option>Homa Bay</option>
-        <option>Migori</option>
-        <option>Kisii</option>
-        <option>Nyamira</option>
-        <option>Nairobi</option>
-      </select>
-    </div>
-
-    <div class="form-step" data-step="3">
-      <label for="houseType">House type</label>
-      <select id="houseType" name="houseType" size="4" required>
-        <option>Apartment</option>
-        <option>Family home</option>
-        <option>Rentals</option>
-        <option>Others</option>
-      </select>
-    </div>
-
-    <div class="form-step" data-step="4">
-      <label for="bedrooms">Number of bedrooms</label>
-      <input id="bedrooms" name="bedrooms" type="number" min="0" step="1" value="3" required />
-    </div>
-
-    <div class="form-step" data-step="5">
-      <label for="landscape">Landscape</label>
-      <select id="landscape" name="landscape" size="2" required>
-        <option>Flat</option>
-        <option>Steep</option>
-      </select>
-    </div>
-
-    <div class="form-step" data-step="6">
-      <label for="areaCondition">Area condition</label>
-      <select id="areaCondition" name="areaCondition" size="2" required>
-        <option>Dry</option>
-        <option>Swampy</option>
-      </select>
-    </div>
-
-    <div class="form-step" data-step="7">
-      <label>Fencing needed</label>
-      <div class="toggle">
-        <div id="fenceSwitch" class="switch" role="switch" aria-checked="false" tabindex="0">
-          <input id="fencing" type="checkbox" name="fencing" />
-          <div class="knob"></div>
+      <form id="projectForm" autocomplete="off">
+        <div class="form-step active" data-step="1">
+          <label for="projectName">Project name</label>
+          <input id="projectName" name="projectName" type="text" placeholder="e.g. Nyeri Family Home" required />
         </div>
-        <div style="font-size:14px;color:#aaa">Toggle if you want the site fenced</div>
-      </div>
-    </div>
-  </form>
-</div>
 
-  </div>  <div class="footer-fixed">
+        <div class="form-step" data-step="2">
+          <label for="county">Location — County</label>
+          <select id="county" name="county" size="6" required>
+            <option>Mombasa</option>
+            <option>Kwale</option>
+            <option>Kilifi</option>
+            <option>Tana River</option>
+            <option>Lamu</option>
+            <option>Taita-Taveta</option>
+            <option>Garissa</option>
+            <option>Wajir</option>
+            <option>Mandera</option>
+            <option>Marsabit</option>
+            <option>Isiolo</option>
+            <option>Meru</option>
+            <option>Tharaka-Nithi</option>
+            <option>Embu</option>
+            <option>Kitui</option>
+            <option>Machakos</option>
+            <option>Makueni</option>
+            <option>Nyandarua</option>
+            <option>Nyeri</option>
+            <option>Kirinyaga</option>
+            <option>Murang'a</option>
+            <option>Kiambu</option>
+            <option>Turkana</option>
+            <option>West Pokot</option>
+            <option>Samburu</option>
+            <option>Trans-Nzoia</option>
+            <option>Uasin Gishu</option>
+            <option>Elgeyo-Marakwet</option>
+            <option>Nandi</option>
+            <option>Baringo</option>
+            <option>Laikipia</option>
+            <option>Nakuru</option>
+            <option>Narok</option>
+            <option>Kajiado</option>
+            <option>Kericho</option>
+            <option>Bomet</option>
+            <option>Kakamega</option>
+            <option>Vihiga</option>
+            <option>Bungoma</option>
+            <option>Busia</option>
+            <option>Siaya</option>
+            <option>Kisumu</option>
+            <option>Homa Bay</option>
+            <option>Migori</option>
+            <option>Kisii</option>
+            <option>Nyamira</option>
+            <option>Nairobi</option>
+          </select>
+        </div>
+
+        <div class="form-step" data-step="3">
+          <label for="houseType">House type</label>
+          <select id="houseType" name="houseType" size="4" required>
+            <option>Apartment</option>
+            <option>Family home</option>
+            <option>Rentals</option>
+            <option>Others</option>
+          </select>
+        </div>
+
+        <div class="form-step" data-step="4">
+          <label for="bedrooms">Number of bedrooms</label>
+          <input id="bedrooms" name="bedrooms" type="number" min="0" step="1" value="3" required />
+        </div>
+
+        <div class="form-step" data-step="5">
+          <label for="landscape">Landscape</label>
+          <select id="landscape" name="landscape" size="2" required>
+            <option>Flat</option>
+            <option>Steep</option>
+          </select>
+        </div>
+
+        <div class="form-step" data-step="6">
+          <label for="areaCondition">Area condition</label>
+          <select id="areaCondition" name="areaCondition" size="2" required>
+            <option>Dry</option>
+            <option>Swampy</option>
+          </select>
+        </div>
+
+        <div class="form-step" data-step="7">
+          <label>Fencing needed</label>
+          <div class="toggle">
+            <div id="fenceSwitch" class="switch" role="switch" aria-checked="false" tabindex="0">
+              <input id="fencing" type="checkbox" name="fencing" />
+              <div class="knob"></div>
+            </div>
+            <div style="font-size:15px;color:#d1d5db">Toggle if you want the site fenced</div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="footer-fixed">
     <button id="prevBtn" disabled>Previous</button>
     <button id="nextBtn">Next</button>
-  </div>  <div id="toast" class="toast"></div>  <script>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
     const steps = document.querySelectorAll('.form-step');
     let currentStep = 0;
 
@@ -256,7 +296,6 @@ button:disabled{background:#444;color:#999;cursor:not-allowed;}
         currentStep++;
         showStep(currentStep);
       } else {
-        // gather data and save
         const data = {
           projectName: document.getElementById('projectName').value.trim(),
           county: document.getElementById('county').value,
@@ -285,5 +324,6 @@ button:disabled{background:#444;color:#999;cursor:not-allowed;}
     });
 
     showStep(currentStep);
-  </script></body>
+  </script>
+</body>
 </html>
