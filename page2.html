@@ -1,207 +1,359 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BoQ Generator — Rooms & Dimensions</title>
+  <meta charset="UTF-8">
+  <title>Architectural Plan Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    :root {
-      --forest:#0b6b3a;
-      --forest-dark:#062e1a;
-      --forest-light:#14532d;
-      --accent:#16a34a;
-    }
-
     body {
-      margin:0;
-      font-family: Inter, sans-serif;
-      background: var(--forest-dark);
-      color:#f5f5f5;
-      font-size:16px;
-      line-height:1.5;
+      background-color: #121212;
+      color: #f5f5f5;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
     }
-
-    .app {
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      min-height:100vh;
-      padding:20px;
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
     }
-
-    .card {
-      max-width:700px;
-      width:100%;
-      background: var(--forest-light);
-      border-radius:14px;
-      padding:24px;
-      box-shadow:0 6px 20px rgba(0,0,0,0.4);
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 20px;
     }
-
-    h1 {
-      margin:0 0 12px;
-      font-size:24px;
-      color:#fff;
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #333;
+      font-size: 16px;
+      color: #000;
+      box-sizing: border-box;
     }
-
-    p.lead {
-      color:#cbd5c0;
-      margin-bottom:20px;
-    }
-
-    label {
-      display:block;
-      margin-bottom:6px;
-      font-size:15px;
-      font-weight:500;
-      color:#e0e0e0;
-    }
-
-    input {
-      width:100%;
-      padding:10px;
-      border-radius:8px;
-      border:1px solid #1f3d2c;
-      background: var(--forest-dark);
-      color:#fff;
-      margin-bottom:12px;
-      font-size:15px;
-    }
-
-    .room {
-      border:1px solid rgba(255,255,255,0.1);
-      padding:12px;
-      border-radius:10px;
-      margin-bottom:14px;
-      background:rgba(0,0,0,0.2);
-    }
-
-    .footer-fixed {
-      position:fixed;
-      bottom:0;
-      left:0;
-      right:0;
-      background: var(--forest-dark);
-      padding:12px 20px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      border-top:1px solid rgba(255,255,255,0.08);
-    }
-
     button {
-      background: var(--accent);
-      border:none;
-      padding:10px 18px;
-      border-radius:8px;
-      font-weight:600;
-      font-size:15px;
-      color:#fff;
-      cursor:pointer;
-      transition: background .2s;
+      background-color: #1e88e5;
+      color: #fff;
+      border: none;
+      cursor: pointer;
     }
-    button:hover { background:#15803d; }
-    button.secondary { background:#374151; }
-    button.secondary:hover { background:#4b5563; }
-
-    .toast {
-      position:fixed;
-      right:20px;
-      bottom:90px;
-      background: var(--forest);
-      padding:14px 16px;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,0.15);
-      color:#e6ffe9;
-      display:none;
-      font-size:14px;
+    button:hover {
+      background-color: #1565c0;
+    }
+    .list-item {
+      background: #1f1f1f;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+    }
+    .list-item span {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .action-buttons {
+      flex: 0 0 10%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .action-buttons button {
+      font-size: 12px;
+      padding: 4px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .edit-btn {
+      background-color: #43a047;
+      color: #fff;
+    }
+    .delete-btn {
+      background-color: #e53935;
+      color: #fff;
+    }
+    .edit-btn:hover { background-color: #2e7d32; }
+    .delete-btn:hover { background-color: #c62828; }
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+    .nav-buttons button { flex: 1; }
+    .hidden { display: none; }
+    @media (max-width: 600px) {
+      h2 { font-size: 18px; }
+      input, select, button { font-size: 14px; padding: 10px; }
+      .list-item { font-size: 14px; }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="card">
-      <h1>Step 2 — Rooms & Dimensions</h1>
-      <p class="lead">Enter the rooms and their dimensions (in meters).</p>
+  <div class="container">
+    <!-- Step 1: Rooms -->
+    <div id="step1">
+      <h2>Step 1: Add Rooms</h2>
+      <input type="text" id="roomName" placeholder="Enter Room Name">
+      <button onclick="addRoom()">Add Room</button>
+      <div id="roomList"></div>
+      <div class="nav-buttons">
+        <span></span>
+        <button onclick="nextStep(2)">Next</button>
+      </div>
+    </div>
 
-      <div id="roomsContainer"></div>
-      <button type="button" id="addRoomBtn" class="secondary">+ Add Room</button>
+    <!-- Step 2: Walls -->
+    <div id="step2" class="hidden">
+      <h2>Step 2: Add Walls</h2>
+      <label>Units:</label>
+      <select id="wallUnit">
+        <option value="m">Meters</option>
+        <option value="ft">Feet</option>
+      </select>
+      <input type="text" id="wallName" placeholder="Enter Wall Name">
+      <input type="number" id="wallLength" placeholder="Wall Length">
+      <input type="number" id="wallHeight" placeholder="Wall Height">
+      <select id="wallRoom"></select>
+      <button onclick="addWall()">Add Wall</button>
+      <div id="wallList"></div>
+      <div class="nav-buttons">
+        <button onclick="prevStep(1)">Previous</button>
+        <button onclick="nextStep(3)">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Doors -->
+    <div id="step3" class="hidden">
+      <h2>Step 3: Add Doors</h2>
+      <label>Units:</label>
+      <select id="doorUnit">
+        <option value="m">Meters</option>
+        <option value="ft">Feet</option>
+      </select>
+      <input type="text" id="doorName" placeholder="Enter Door Name">
+      <input type="number" id="doorWidth" placeholder="Door Width" value="0.9">
+      <input type="number" id="doorHeight" placeholder="Door Height" value="2.1">
+      <select id="doorWall"></select>
+      <button onclick="addDoor()">Add Door</button>
+      <div id="doorList"></div>
+      <div class="nav-buttons">
+        <button onclick="prevStep(2)">Previous</button>
+        <button onclick="nextStep(4)">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Windows -->
+    <div id="step4" class="hidden">
+      <h2>Step 4: Add Windows</h2>
+      <label>Units:</label>
+      <select id="windowUnit">
+        <option value="m">Meters</option>
+        <option value="ft">Feet</option>
+      </select>
+      <input type="text" id="windowName" placeholder="Enter Window Name">
+      <input type="number" id="windowWidth" placeholder="Window Width" value="1.2">
+      <input type="number" id="windowHeight" placeholder="Window Height" value="1.2">
+      <select id="windowWall"></select>
+      <button onclick="addWindow()">Add Window</button>
+      <div id="windowList"></div>
+      <div class="nav-buttons">
+        <button onclick="prevStep(3)">Previous</button>
+        <button onclick="nextStep(5)">Next</button>
+      </div>
+    </div>
+
+    <!-- Step 5: Preview -->
+    <div id="step5" class="hidden">
+      <h2>Step 5: Preview Plan</h2>
+      <div id="preview"></div>
+      <div class="nav-buttons">
+        <button onclick="prevStep(4)">Previous</button>
+        <button onclick="alert('Proceeding...')">Proceed</button>
+      </div>
     </div>
   </div>
 
-  <div class="footer-fixed">
-    <button id="backBtn">Back</button>
-    <button id="nextBtn">Proceed to Page 3</button>
-  </div>
-
-  <div id="toast" class="toast"></div>
-
   <script>
-    const roomsContainer = document.getElementById('roomsContainer');
-    const addRoomBtn = document.getElementById('addRoomBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const backBtn = document.getElementById('backBtn');
-    const toast = document.getElementById('toast');
+    let rooms = [];
+    let walls = [];
+    let doors = [];
+    let windowsArr = [];
 
-    // Load existing project data
-    let projectData = JSON.parse(localStorage.getItem('boq_project') || '{}');
-    if (!projectData.projectName) {
-      alert("No project data found. Redirecting to setup.");
-      window.location.href = "index.html"; // your page1 filename
+    function addRoom() {
+      const name = document.getElementById('roomName').value.trim();
+      if (!name) return;
+      if (rooms.includes(name)) { alert("Room name already exists!"); return; }
+      rooms.push(name);
+      updateRoomList();
+      document.getElementById('roomName').value = '';
+      updateWallRoomOptions();
     }
-    if (!projectData.rooms) projectData.rooms = [];
-
-    function showToast(msg){
-      toast.textContent = msg;
-      toast.style.display = 'block';
-      setTimeout(()=>toast.style.display='none',2000);
-    }
-
-    function createRoomElement(room={name:"", length:"", width:"", height:""}) {
-      const div = document.createElement('div');
-      div.className = "room";
-      div.innerHTML = `
-        <label>Room name</label>
-        <input type="text" class="room-name" value="${room.name}" placeholder="e.g. Living Room" required />
-        <label>Length (m)</label>
-        <input type="number" step="0.01" class="room-length" value="${room.length}" required />
-        <label>Width (m)</label>
-        <input type="number" step="0.01" class="room-width" value="${room.width}" required />
-        <label>Height (m)</label>
-        <input type="number" step="0.01" class="room-height" value="${room.height}" required />
-      `;
-      roomsContainer.appendChild(div);
-    }
-
-    // Load existing rooms if any
-    projectData.rooms.forEach(r => createRoomElement(r));
-
-    // Add room button
-    addRoomBtn.addEventListener('click', () => {
-      createRoomElement();
-    });
-
-    // Save & proceed
-    nextBtn.addEventListener('click', () => {
-      const roomEls = document.querySelectorAll('.room');
-      let rooms = [];
-      roomEls.forEach(el => {
-        rooms.push({
-          name: el.querySelector('.room-name').value.trim(),
-          length: parseFloat(el.querySelector('.room-length').value) || 0,
-          width: parseFloat(el.querySelector('.room-width').value) || 0,
-          height: parseFloat(el.querySelector('.room-height').value) || 0
-        });
+    function updateRoomList() {
+      const list = document.getElementById('roomList');
+      list.innerHTML = '';
+      rooms.forEach((r, i) => {
+        list.innerHTML += `<div class="list-item">
+          <span id="room-${i}">${r}</span>
+          <div class="action-buttons">
+            <button class="edit-btn" onclick="editRoom(${i})">Edit</button>
+            <button class="delete-btn" onclick="deleteRoom(${i})">Del</button>
+          </div></div>`;
       });
-      projectData.rooms = rooms;
-      localStorage.setItem('boq_project', JSON.stringify(projectData));
-      showToast("Rooms saved. Proceeding...");
-      setTimeout(()=> window.location.href="page3.html", 1000);
-    });
+    }
+    function deleteRoom(i) {
+      rooms.splice(i,1);
+      updateRoomList();
+      updateWallRoomOptions();
+    }
+    function editRoom(i) {
+      const span = document.getElementById(`room-${i}`);
+      const oldValue = rooms[i];
+      span.innerHTML = `<input type="text" id="edit-room-${i}" value="${oldValue}" style="width:90%">`;
+      const input = document.getElementById(`edit-room-${i}`);
+      input.focus();
+      input.onblur = () => { rooms[i] = input.value.trim() || oldValue; updateRoomList(); updateWallRoomOptions(); };
+    }
 
-    backBtn.addEventListener('click', () => {
-      window.location.href = "index.html"; // page1 filename
-    });
+    function updateWallRoomOptions() {
+      const select = document.getElementById('wallRoom');
+      select.innerHTML = rooms.map(r => `<option value="${r}">${r}</option>`).join('');
+    }
+
+    function addWall() {
+      const name = document.getElementById('wallName').value.trim();
+      const length = document.getElementById('wallLength').value;
+      const height = document.getElementById('wallHeight').value;
+      const unit = document.getElementById('wallUnit').value;
+      const room = document.getElementById('wallRoom').value;
+      if (!name || !length || !height || !room) return;
+      walls.push({name, length, height, unit, room});
+      updateWallList();
+      document.getElementById('wallName').value = '';
+      document.getElementById('wallLength').value = '';
+      document.getElementById('wallHeight').value = '';
+      updateWallOptions();
+    }
+    function updateWallList() {
+      const list = document.getElementById('wallList');
+      list.innerHTML = '';
+      walls.forEach((w, i) => {
+        list.innerHTML += `<div class="list-item">
+          <span id="wall-${i}">${w.name} - ${w.length}x${w.height} ${w.unit} (Room: ${w.room})</span>
+          <div class="action-buttons">
+            <button class="edit-btn" onclick="editWall(${i})">Edit</button>
+            <button class="delete-btn" onclick="deleteWall(${i})">Del</button>
+          </div></div>`;
+      });
+    }
+    function deleteWall(i) { walls.splice(i,1); updateWallList(); updateWallOptions(); }
+    function editWall(i) {
+      const span = document.getElementById(`wall-${i}`);
+      const w = walls[i];
+      span.innerHTML = `<input type="text" id="edit-wall-${i}" value="${w.name}" style="width:90%">`;
+      const input = document.getElementById(`edit-wall-${i}`);
+      input.focus();
+      input.onblur = () => { walls[i].name = input.value.trim() || w.name; updateWallList(); };
+    }
+
+    function updateWallOptions() {
+      const doorSel = document.getElementById('doorWall');
+      const winSel = document.getElementById('windowWall');
+      doorSel.innerHTML = walls.map(w => `<option value="${w.name}">${w.name} (${w.room})</option>`).join('');
+      winSel.innerHTML = doorSel.innerHTML;
+    }
+
+    function addDoor() {
+      const name = document.getElementById('doorName').value.trim();
+      const width = document.getElementById('doorWidth').value;
+      const height = document.getElementById('doorHeight').value;
+      const unit = document.getElementById('doorUnit').value;
+      const wall = document.getElementById('doorWall').value;
+      if (!name || !width || !height || !wall) return;
+      doors.push({name, width, height, unit, wall});
+      updateDoorList();
+      document.getElementById('doorName').value = '';
+    }
+    function updateDoorList() {
+      const list = document.getElementById('doorList');
+      list.innerHTML = '';
+      doors.forEach((d, i) => {
+        list.innerHTML += `<div class="list-item">
+          <span id="door-${i}">${d.name} - ${d.width}x${d.height} ${d.unit} (Wall: ${d.wall})</span>
+          <div class="action-buttons">
+            <button class="edit-btn" onclick="editDoor(${i})">Edit</button>
+            <button class="delete-btn" onclick="deleteDoor(${i})">Del</button>
+          </div></div>`;
+      });
+    }
+    function deleteDoor(i) { doors.splice(i,1); updateDoorList(); }
+    function editDoor(i) {
+      const span = document.getElementById(`door-${i}`);
+      const d = doors[i];
+      span.innerHTML = `<input type="text" id="edit-door-${i}" value="${d.name}" style="width:90%">`;
+      const input = document.getElementById(`edit-door-${i}`);
+      input.focus();
+      input.onblur = () => { doors[i].name = input.value.trim() || d.name; updateDoorList(); };
+    }
+
+    function addWindow() {
+      const name = document.getElementById('windowName').value.trim();
+      const width = document.getElementById('windowWidth').value;
+      const height = document.getElementById('windowHeight').value;
+      const unit = document.getElementById('windowUnit').value;
+      const wall = document.getElementById('windowWall').value;
+      if (!name || !width || !height || !wall) return;
+      windowsArr.push({name, width, height, unit, wall});
+      updateWindowList();
+      document.getElementById('windowName').value = '';
+    }
+    function updateWindowList() {
+      const list = document.getElementById('windowList');
+      list.innerHTML = '';
+      windowsArr.forEach((w, i) => {
+        list.innerHTML += `<div class="list-item">
+          <span id="window-${i}">${w.name} - ${w.width}x${w.height} ${w.unit} (Wall: ${w.wall})</span>
+          <div class="action-buttons">
+            <button class="edit-btn" onclick="editWindow(${i})">Edit</button>
+            <button class="delete-btn" onclick="deleteWindow(${i})">Del</button>
+          </div></div>`;
+      });
+    }
+    function deleteWindow(i) { windowsArr.splice(i,1); updateWindowList(); }
+    function editWindow(i) {
+      const span = document.getElementById(`window-${i}`);
+      const w = windowsArr[i];
+      span.innerHTML = `<input type="text" id="edit-window-${i}" value="${w.name}" style="width:90%">`;
+      const input = document.getElementById(`edit-window-${i}`);
+      input.focus();
+      input.onblur = () => { windowsArr[i].name = input.value.trim() || w.name; updateWindowList(); };
+    }
+
+    function nextStep(n) {
+      document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden'));
+      document.getElementById('step'+n).classList.remove('hidden');
+      if (n === 5) generatePreview();
+    }
+    function prevStep(n) { nextStep(n); }
+
+    function generatePreview() {
+      let summary = '';
+      rooms.forEach(r => {
+        const rWalls = walls.filter(w => w.room === r);
+        const rDoors = doors.filter(d => rWalls.some(w => w.name === d.wall));
+        const rWindows = windowsArr.filter(wi => rWalls.some(w => w.name === wi.wall));
+        summary += `<div class="list-item"><strong>${r}</strong>: 
+          ${rWalls.length} Walls, ${rDoors.length} Doors, ${rWindows.length} Windows</div>`;
+      });
+      document.getElementById('preview').innerHTML = summary;
+    }
   </script>
 </body>
 </html>
