@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Architectural Plan Builder - Room Areas</title>
+  <title>BoQ Generator — Verification</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -13,19 +13,31 @@
       padding: 0;
     }
     .container {
-      max-width: 700px;
+      max-width: 800px;
       margin: auto;
       padding: 20px;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 15px;
-      font-size: 22px;
+    h2 { text-align: center; margin-bottom: 15px; }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #333;
+      font-size: 16px;
+      box-sizing: border-box;
     }
+    button {
+      background-color: #1e88e5;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { background-color: #1565c0; }
     .list-item {
       background: #1f1f1f;
-      margin: 8px 0;
-      padding: 12px;
+      margin: 5px 0;
+      padding: 10px;
       border-radius: 6px;
       font-size: 15px;
     }
@@ -35,85 +47,119 @@
       margin-top: 20px;
       gap: 10px;
     }
-    .nav-buttons button {
-      flex: 1;
-      padding: 12px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .prev-btn { background-color: #757575; color: #fff; }
-    .next-btn { background-color: #1e88e5; color: #fff; }
-    .prev-btn:hover { background-color: #555; }
-    .next-btn:hover { background-color: #1565c0; }
+    .nav-buttons button { flex: 1; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Step 6: Room Area Calculations</h2>
-    <div id="roomAreas"></div>
-    <div class="nav-buttons">
-      <button class="prev-btn" onclick="goPrev()">Previous</button>
-      <button class="next-btn" onclick="goNext()">Back</button>
+    <h2>Step 3: Verify Plan</h2>
+
+    <!-- Fence inputs if fencing is enabled -->
+    <div id="fenceInputs" class="hidden">
+      <h3>Perimeter Wall Details</h3>
+      <label>Units:</label>
+      <select id="fenceUnit">
+        <option value="m">Meters</option>
+        <option value="ft">Feet</option>
+      </select>
+      <input type="number" id="fencePerimeter" placeholder="Perimeter length" />
+      <input type="number" id="fenceHeight" placeholder="Wall height" />
+      <button onclick="saveFence()">Save Fence Data</button>
+    </div>
+
+    <!-- Preview of data -->
+    <div id="preview"></div>
+
+    <!-- Agreement -->
+    <div id="agreementSection" class="hidden">
+      <h3>Do you agree with this data?</h3>
+      <div class="nav-buttons">
+        <button onclick="goPrevious()">No, Go Back</button>
+        <button onclick="proceed()">Yes, Proceed</button>
+      </div>
     </div>
   </div>
 
   <script>
-    // Example: These would usually come from localStorage or passed state
-    let rooms = JSON.parse(localStorage.getItem("rooms")) || [];
-    let walls = JSON.parse(localStorage.getItem("walls")) || [];
-    let doors = JSON.parse(localStorage.getItem("doors")) || [];
-    let windowsArr = JSON.parse(localStorage.getItem("windows")) || [];
+    let project1 = JSON.parse(localStorage.getItem('boq_project')) || {};
+    let project2 = JSON.parse(localStorage.getItem('boq_project_step2')) || {};
+    let project3 = {};
 
-    function calculateAreas() {
-      const container = document.getElementById("roomAreas");
-      container.innerHTML = "";
+    // Show fence inputs if fencing enabled
+    window.onload = () => {
+      if (project1.fencing) {
+        document.getElementById('fenceInputs').classList.remove('hidden');
+      } else {
+        generatePreview();
+      }
+    };
 
-      rooms.forEach(room => {
-        const rWalls = walls.filter(w => w.room === room);
+    function saveFence() {
+      const perimeter = parseFloat(document.getElementById('fencePerimeter').value);
+      const height = parseFloat(document.getElementById('fenceHeight').value);
+      const unit = document.getElementById('fenceUnit').value;
+      if (!perimeter || !height) {
+        alert("Please fill perimeter and height");
+        return;
+      }
+      project3.fence = { perimeter, height, unit };
+      localStorage.setItem('boq_project_step3', JSON.stringify(project3));
+      generatePreview();
+    }
 
-        let totalArea = 0;
-        let wallsInfo = "";
+    function generatePreview() {
+      const preview = document.getElementById('preview');
+      preview.innerHTML = "<h3>Plan Preview</h3>";
 
-        rWalls.forEach(w => {
-          let wallArea = parseFloat(w.length) * parseFloat(w.height);
+      // If fencing
+      if (project1.fencing && project3.fence) {
+        const f = project3.fence;
+        preview.innerHTML += `<div class="list-item"><strong>Perimeter Wall:</strong> ${f.perimeter} ${f.unit} long, ${f.height} ${f.unit} high</div>`;
+      }
 
-          // Subtract doors attached to this wall
-          const wallDoors = doors.filter(d => d.wall === w.name);
-          wallDoors.forEach(d => {
-            wallArea -= (parseFloat(d.width) * parseFloat(d.height));
+      // Rooms + Walls + Doors + Windows
+      if (project2.rooms) {
+        project2.rooms.forEach(r => {
+          const rWalls = project2.walls.filter(w => w.room === r);
+          const rDoors = project2.doors.filter(d => rWalls.some(w => w.name === d.wall));
+          const rWindows = project2.windows.filter(w => rWalls.some(x => x.name === w.wall));
+
+          // compute perimeter (sum of wall lengths in meters)
+          let perimeter = 0;
+          rWalls.forEach(w => {
+            let len = parseFloat(w.length) || 0;
+            if (w.unit === "ft") len *= 0.3048; // convert to meters
+            perimeter += len;
           });
 
-          // Subtract windows attached to this wall
-          const wallWindows = windowsArr.filter(win => win.wall === w.name);
-          wallWindows.forEach(win => {
-            wallArea -= (parseFloat(win.width) * parseFloat(win.height));
-          });
-
-          totalArea += wallArea;
-          wallsInfo += `<br> - ${w.name}: ${w.length} x ${w.height} = ${wallArea.toFixed(2)} m²`;
+          preview.innerHTML += `
+            <div class="list-item">
+              <strong>Room:</strong> ${r}<br>
+              Walls: ${rWalls.map(w => w.name).join(", ") || "None"}<br>
+              Doors: ${rDoors.length}, Windows: ${rWindows.length}<br>
+              Perimeter: ${perimeter.toFixed(2)} meters
+            </div>`;
         });
+      }
 
-        container.innerHTML += `
-          <div class="list-item">
-            <strong>${room}</strong><br>
-            Total Net Wall Area: ${totalArea.toFixed(2)} m²
-            <br><em>Walls:</em> ${wallsInfo}
-          </div>`;
-      });
+      document.getElementById('agreementSection').classList.remove('hidden');
     }
 
-    function goPrev() {
-      window.location.href = "page2.html"; // go back to previous step
-    }
-    function goNext() {
-      alert("Proceeding to next step...");
-      // window.location.href = "page4.html"; // if next page exists
+    function goPrevious() {
+      window.location.href = "page2.html";
     }
 
-    // Run on load
-    calculateAreas();
+    function proceed() {
+      // Save final verification snapshot
+      project3.rooms = project2.rooms;
+      project3.walls = project2.walls;
+      project3.doors = project2.doors;
+      project3.windows = project2.windows;
+      localStorage.setItem('boq_project_step3', JSON.stringify(project3));
+      alert("Proceeding to materials calculation...");
+      window.location.href = "page4.html";
+    }
   </script>
 </body>
 </html>
